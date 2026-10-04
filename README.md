@@ -48,10 +48,14 @@ The model and included textures are in the downloadable model package. Download 
 
 The CC0 dedication does not waive or license third-party rights in the building's architectural design, names, or trademarks. No affiliation or endorsement by Surat Diamond Bourse or Morphogenesis is claimed. The files are supplied as-is, without warranties.
 
-![Courtyard](previews/courtyard.png)
+## Preview gallery
 
-![Lobby](previews/lobby.png)
+15 views cover the exterior, selected interiors, public circulation, and basement parking. Select a preview to open the full-size image. [Open the complete gallery](previews/README.md).
 
-![Office](previews/office.png)
-
-![Basement parking](previews/parking.png)
+| View | View | View |
+| --- | --- | --- |
+| [![Exterior overview](previews/hero.png)](previews/hero.png)<br>Exterior overview | [![Aerial layout](previews/aerial.png)](previews/aerial.png)<br>Aerial layout | [![Diamond Club](previews/diamond_club.png)](previews/diamond_club.png)<br>Diamond Club |
+| [![Diamond Club at dusk](previews/diamond_club_dusk.png)](previews/diamond_club_dusk.png)<br>Diamond Club at dusk | [![Landscaped courtyard](previews/courtyard.png)](previews/courtyard.png)<br>Landscaped courtyard | [![Public lobby](previews/lobby.png)](previews/lobby.png)<br>Public lobby |
+| [![Central atrium](previews/atrium.png)](previews/atrium.png)<br>Central atrium | [![Planted corridor](previews/planted_corridor.png)](previews/planted_corridor.png)<br>Planted corridor | [![Representative office](previews/office.png)](previews/office.png)<br>Representative office |
+| [![Public staircase](previews/public_stair.png)](previews/public_stair.png)<br>Public staircase | [![Lift lobby](previews/lift_lobby.png)](previews/lift_lobby.png)<br>Lift lobby | [![Basement parking](previews/parking.png)](previews/parking.png)<br>Basement parking |
+| [![Parking entrance ramp](previews/parking_ramp.png)](previews/parking_ramp.png)<br>Parking entrance ramp | [![Basement lift core](previews/parking_core.png)](previews/parking_core.png)<br>Basement lift core | [![Basement staircase](previews/basement_stair.png)](previews/basement_stair.png)<br>Basement staircase |

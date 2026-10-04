@@ -1,2 +1,2 @@
-760cb860d9010db32215a1d4edd62b7c1965581568f7363979cde5ed44672ec6  surat-diamond-bourse-model-v1.0.0.zip
-b4a033e0c6b6d07ba369165aee2168eadbb2e855ea2da95f92cc92729e1e02b6  surat-diamond-bourse-showcase-v1.0.0.zip
+76e987de4710542959f59ce152601a04dee08667ebaed995d5d1cdff3c46c492  surat-diamond-bourse-model-v1.0.0.zip
+5fa1777e3df0443413b49cacba2d1092a3efe0fa0369edf26f44587941c8efd6  surat-diamond-bourse-showcase-v1.0.0.zip
