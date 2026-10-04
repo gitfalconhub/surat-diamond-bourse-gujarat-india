@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.blend1
+*.blend2
+*.blend
+*.zip
+textures/
+video/*.blend
+checkpoints/
+work/
+renders/
