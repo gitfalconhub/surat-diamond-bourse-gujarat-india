@@ -1,8 +1,8 @@
-# Surat Diamond Bourse — Gujarat, India
+# Surat Diamond Bourse 3D Model — Blender Reconstruction
 
-**Editable Blender Reconstruction**
+**Surat, Gujarat, India · Editable architectural visualization**
 
-A reference-led 3D visualization of Surat Diamond Bourse in Surat, Gujarat, India. The project includes the complete editable building scene, selected public interiors, landscaping, two connected basement parking levels, materials, and modelling source files.
+An editable Blender 3D model of Surat Diamond Bourse (SDB) in Surat, Gujarat, India, built from public references. This architectural visualization includes the complete building scene, selected public interiors, landscaping, two connected basement parking levels, materials, and Python modelling scripts. Download the `.blend` model and optional 70-second animated camera scene below.
 
 The project's original modelling contribution is dedicated under **CC0 1.0 Universal**. No credit to the model creator is requested. See [RIGHTS.md](RIGHTS.md) for the scope of that dedication and the unresolved rights in the real-world architectural design.
 
