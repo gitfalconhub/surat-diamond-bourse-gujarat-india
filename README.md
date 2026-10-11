@@ -1,12 +1,28 @@
-# Surat Diamond Bourse — Gujarat, India
+# Surat Diamond Bourse — Free Blender 3D Model
 
-**Editable Blender Reconstruction**
+**Surat, Gujarat, India · Editable architectural visualization**
 
-A reference-led 3D visualization of Surat Diamond Bourse in Surat, Gujarat, India. The project includes the complete editable building scene, selected public interiors, landscaping, two connected basement parking levels, materials, and modelling source files.
+A free-to-download, editable Blender 3D model of Surat Diamond Bourse (SDB) in Surat, Gujarat, India, built from public references. This architectural visualization includes the complete building scene, selected public interiors, landscaping, two connected basement parking levels, materials, and Python modelling scripts. Download the `.blend` model and optional 70-second animated camera scene below.
+
+Guinness World Records lists the real Surat Diamond Bourse as the [world's largest office building](https://www.guinnessworldrecords.com/world-records/756316-largest-office-building), with 659,611 m² (7.1 million sq ft) of floor space. The record was achieved on 8 August 2023.
 
 The project's original modelling contribution is dedicated under **CC0 1.0 Universal**. No credit to the model creator is requested. See [RIGHTS.md](RIGHTS.md) for the scope of that dedication and the unresolved rights in the real-world architectural design.
 
 ![Exterior overview](previews/hero.png)
+
+## Asset details
+
+| Detail | Value |
+| --- | --- |
+| Download price | Free; no paid assets or third-party add-ons required |
+| Main file format | Native Blender `.blend`, delivered in a ZIP package |
+| Blender version | 5.2 or newer; saved and verified with 5.2.1 |
+| Included content | Editable building, selected interiors, landscaping, basement parking, packed textures and Python source |
+| Optional animation | Separate 70-second Blender camera scene; no finished video included |
+| Original model contribution | CC0 1.0 Universal, to the extent the contributors hold rights; see [RIGHTS.md](RIGHTS.md) |
+| Python source licence | GPL 3.0 or later; see [LICENSE-SCRIPTS](LICENSE-SCRIPTS) |
+
+For asset tools and AI agents, the download links below point directly to the ZIP files. The release includes a [SHA-256 checksum file](https://github.com/gitfalconhub/surat-diamond-bourse-gujarat-india/releases/download/v1.0.1/SHA256SUMS.txt). The saved `.blend` is the finished asset; running the Python scripts is optional. Check the licensing and accuracy sections before reuse.
 
 ## Download and open
 
@@ -16,7 +32,7 @@ Download `surat-diamond-bourse-model-v1.0.1.zip` from the link above. Extract th
 
 The model ZIP includes the six packed texture maps and editable texture copies. No paid assets or third-party add-ons are required. Start in Solid or Material Preview mode to explore the scene; rendering is more demanding. The original Mac GPU preferences are not a requirement: select a rendering device appropriate to your machine.
 
-An optional **`surat-diamond-bourse-showcase-v1.0.1.zip`** adds the separate animated camera scene. This archived camera sequence is 70 seconds, 30 fps, 2,100 frames, with 14 shots and day/dusk lighting. It is a Blender scene, not a finished movie. Its saved presentation resolution is 2560 × 1440; adjust output settings for your own use. It is independent of the ongoing production render.
+An optional **[surat-diamond-bourse-showcase-v1.0.1.zip](https://github.com/gitfalconhub/surat-diamond-bourse-gujarat-india/releases/download/v1.0.1/surat-diamond-bourse-showcase-v1.0.1.zip)** adds the separate animated camera scene. This archived camera sequence is 70 seconds, 30 fps, 2,100 frames, with 14 shots and day/dusk lighting. It is a Blender scene, not a finished movie. Its saved presentation resolution is 2560 × 1440; adjust output settings for your own use. It is independent of the ongoing production render.
 
 ## What is modelled
 
