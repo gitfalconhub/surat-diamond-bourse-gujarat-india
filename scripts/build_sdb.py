@@ -19,6 +19,7 @@ importlib.reload(A)
 
 JOB = json.loads((SCRIPT_DIR/'job.json').read_text()) if (SCRIPT_DIR/'job.json').exists() else {'phase':'massing'}
 LOG = PROJECT / 'build_status.json'
+_WRITTEN_THIS_RUN = set()
 
 def status(stage, **kw):
     LOG.write_text(json.dumps({'stage':stage, **kw}, indent=2))
@@ -130,9 +131,22 @@ def finish_materials():
         p.inputs['Metallic'].default_value=.48
         p.inputs['Roughness'].default_value=.16
 
+def output_path(name):
+    candidate=Path(name)
+    if candidate.is_absolute() or '..' in candidate.parts or candidate.suffix.lower() != '.blend':
+        raise ValueError('Save names must be relative .blend paths inside the project.')
+    path=(PROJECT/candidate).resolve()
+    if not path.is_relative_to(PROJECT.resolve()):
+        raise ValueError('Save path escapes the project through a symbolic link.')
+    return path
+
 def save(name):
-    path=PROJECT/name
+    path=output_path(name)
+    if path.exists() and path not in _WRITTEN_THIS_RUN and JOB.get('allow_overwrite', False) is not True:
+        raise FileExistsError('Preserve existing files or explicitly opt into overwriting in job.json.')
+    path.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(path))
+    _WRITTEN_THIS_RUN.add(path)
     status('saved',file=str(path))
 
 def render(cameras, keys, prefix='', width=1600, samples=96):
@@ -149,7 +163,20 @@ def render(cameras, keys, prefix='', width=1600, samples=96):
         status('rendered',camera=name,path=scene.render.filepath)
 
 def main():
+    if (bpy.data.filepath or bpy.data.is_dirty) and JOB.get('allow_scene_reset', False) is not True:
+        raise RuntimeError('Start in a fresh Blender scene; rebuilding clears scene objects. Explicitly opt in only in a disposable copy.')
     phase=JOB.get('phase','massing')
+    names=[JOB.get('save', 'checkpoints/SDB_01_research_blockout.blend' if phase=='massing' else 'Surat Diamond Bourse.blend')]
+    if phase != 'massing':
+        names.extend(['checkpoints/SDB_03_architecture.blend', 'checkpoints/SDB_04_facades.blend', 'checkpoints/SDB_05_site.blend'])
+        if JOB.get('final', False): names.append('Surat Diamond Bourse.blend')
+    for name in names:
+        path=output_path(name)
+        if path.exists() and JOB.get('allow_overwrite', False) is not True:
+            raise FileExistsError('Build only in a disposable copy; existing output files require explicit allow_overwrite.')
+    prefix=JOB.get('prefix', '')
+    if not isinstance(prefix, str) or any(ch in prefix for ch in ('/', '\\')) or '..' in prefix:
+        raise ValueError('Render prefix must not contain paths.')
     status('starting',phase=phase)
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete(use_global=False)
@@ -190,12 +217,12 @@ def main():
                 for child,world_matrix in children:child.matrix_world=world_matrix
         bpy.context.view_layer.material_override=None
         # Store source code and assumptions inside the .blend for portability.
-        for src in SCRIPT_DIR.glob('*.py'):
+        for src in (SCRIPT_DIR/name for name in ('build_sdb.py', 'build_showcase.py', 'fix_showcase_ramp.py', 'polish_architecture.py', 'polish_details.py', 'polish_materials.py', 'polish_parking.py', 'polish_site.py', 'sdb_architecture.py', 'sdb_refine.py', 'sdb_site.py', 'sdb_utils.py') if (SCRIPT_DIR/name).is_file()):
             txt=bpy.data.texts.get(src.name) or bpy.data.texts.new(src.name)
-            txt.clear();txt.write(src.read_text())
-        for src in PROJECT.glob('*.md'):
+            txt.clear();txt.write(src.read_text());txt.use_module=False
+        for src in (PROJECT/name for name in ('README.md', 'REFERENCES.md', 'RIGHTS.md', 'ASSET_LICENSES.md', 'RELEASE_CHECKLIST.md') if (PROJECT/name).is_file()):
             txt=bpy.data.texts.get(src.name) or bpy.data.texts.new(src.name)
-            txt.clear();txt.write(src.read_text())
+            txt.clear();txt.write(src.read_text());txt.use_module=False
         bpy.context.scene['Model purpose']='Exterior architectural reconstruction from public references; not a surveyed BIM.'
         bpy.context.scene['Dimensions']='Metres. Ground floor 6.4m; office floor spacing3.9m. Plan lengths estimated.'
         bpy.context.scene['Tower count']=9
@@ -243,9 +270,10 @@ def main():
         (PROJECT/'scene_audit.json').write_text(json.dumps(audit,indent=2))
     status('complete',phase=phase,objects=len(bpy.data.objects),meshes=len(bpy.data.meshes))
 
-try:
-    main()
-except Exception:
-    status('error',traceback=traceback.format_exc())
-    traceback.print_exc()
-    raise
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception:
+        status('error',traceback=traceback.format_exc())
+        traceback.print_exc()
+        raise

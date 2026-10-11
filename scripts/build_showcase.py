@@ -10,11 +10,10 @@ from mathutils import Vector
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 import polish_materials as PM
-VIDEO=ROOT/'video';VIDEO.mkdir(exist_ok=True)
+VIDEO=ROOT/'video'
 STATUS=ROOT/'work'/'showcase_build.json'
 main=ROOT/'Surat Diamond Bourse.blend'
-source_hash=hashlib.sha256(main.read_bytes()).hexdigest()
-status={'started':time.time(),'complete':False,'source_sha256':source_hash}
+status={}
 def record(): STATUS.write_text(json.dumps(status,indent=2))
 def curves(id):
     ad=getattr(id,'animation_data',None)
@@ -89,105 +88,122 @@ SHOTS=[
  ('14 Diamond Club dusk','CAM Diamond Club',7,(205,133,9),(194.6,139.4,9),(150,55,9),(150,55,9)),
 ]
 
-try:
-    record();s=bpy.context.scene
-    # A pristine source is required; this script is not a procedural rebuild.
-    assert len(bpy.data.actions)==0,'Load the polished main file before building the film.'
-    assert len([o for o in s.objects if o.name.startswith('Tower ') and o.name.endswith(' Root')])==9
-    coll=bpy.data.collections.new('Showcase | Animated cameras');s.collection.children.link(coll)
-    s.frame_start=1;s.frame_end=2100;s.render.fps=30;s.render.fps_base=1
-    s.render.resolution_x=2560;s.render.resolution_y=1440;s.render.resolution_percentage=100
-    fixture_count=day_dusk(s,1891)
-    s.render.engine='CYCLES';s.cycles.samples=512;s.cycles.use_adaptive_sampling=True
-    s.cycles.adaptive_threshold=.005;s.cycles.adaptive_min_samples=32
-    s.cycles.max_bounces=12;s.cycles.diffuse_bounces=6;s.cycles.glossy_bounces=6
-    s.cycles.transmission_bounces=8;s.cycles.transparent_max_bounces=12
-    s.cycles.use_denoising=True;s.cycles.denoiser='OPENIMAGEDENOISE'
-    s.cycles.denoising_prefilter='ACCURATE';s.cycles.denoising_quality='HIGH'
-    s.cycles.seed=42;s.cycles.use_animated_seed=False
-    s.render.use_motion_blur=True;s.render.motion_blur_shutter=.35
-    s.render.use_persistent_data=True;s.render.use_sequencer=False
-    s.render.image_settings.file_format='PNG';s.render.image_settings.color_mode='RGB'
-    s.render.image_settings.color_depth='16';s.render.image_settings.compression=20
-    s.render.filepath='//frames/frame_';s.render.use_simplify=False
-    s.timeline_markers.clear();shots=[];frame=1
-    for title,source,duration,a,b,ta,tb in SHOTS:
-        src=bpy.data.objects[source];data=src.data.copy();data.name='Showcase | '+title
-        data.dof.use_dof=False;data.passepartout_alpha=1
-        cam=bpy.data.objects.new('Showcase | '+title,data);coll.objects.link(cam)
-        cam.rotation_mode='QUATERNION';cam['source_camera']=source
-        end=frame+duration*30-1
-        # Holds outside this shot keep motion blur at cuts self-contained.
-        last_q=None
-        for f in range(max(0,frame-1),min(2101,end+1)+1):
-            t=max(0,min(1,(f-frame)/(end-frame)));u=t*t*(3-2*t)
-            if 'Aerial arc' in title:
-                center=Vector((0,4,0));pa=Vector(a)-center;pb=Vector(b)-center
-                theta_a=math.atan2(pa.y,pa.x);theta_b=math.atan2(pb.y,pb.x)
-                theta=theta_a+(theta_b-theta_a)*u
-                radius=math.hypot(pa.x,pa.y)+(math.hypot(pb.x,pb.y)-math.hypot(pa.x,pa.y))*u
-                cam.location=(center.x+radius*math.cos(theta),center.y+radius*math.sin(theta),a[2]+(b[2]-a[2])*u)
-            elif 'Club dusk' in title:
-                center=Vector((150,55,0));radius=math.hypot(a[0]-150,a[1]-55)
-                angle=math.atan2(a[1]-55,a[0]-150)+math.radians(8)*u
-                cam.location=(150+radius*math.cos(angle),55+radius*math.sin(angle),9)
-            else:cam.location=Vector(a).lerp(Vector(b),u)
-            target=Vector(ta).lerp(Vector(tb),u)
-            q=(target-cam.location).to_track_quat('-Z','Y')
-            if last_q and q.dot(last_q)<0:q.negate()
-            cam.rotation_quaternion=q;last_q=q.copy()
-            cam.keyframe_insert('location',frame=f);cam.keyframe_insert('rotation_quaternion',frame=f)
-        interpolation(cam,'LINEAR')
-        marker=s.timeline_markers.new(title,frame=frame);marker.camera=cam
-        exposure=PM.exposure_for_camera(source,dusk=title.startswith('14 '))
-        for f in (frame,end):
-            s.view_settings.exposure=exposure;s.view_settings.keyframe_insert('exposure',frame=f)
-        shots.append({'title':title,'camera':cam.name,'source':source,'start':frame,'end':end,
-                      'seconds':duration,'lens':data.lens,'exposure':exposure})
-        frame=end+1
-    interpolation(s,'CONSTANT')
-    assert frame==2101
-    s.camera=bpy.data.objects[shots[0]['camera']];s.frame_set(1)
-    # Review centerline clearance at 11 samples for every shot.
-    near=[];poses=[]
-    directions=[Vector(v) for v in ((1,0,0),(-1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1))]
-    for shot in shots:
-        cam=bpy.data.objects[shot['camera']]
-        for i in range(11):
-            f=round(shot['start']+(shot['end']-shot['start'])*i/10);s.frame_set(f)
-            assert s.camera==cam,(f,s.camera.name,cam.name)
-            dg=bpy.context.evaluated_depsgraph_get();origin=cam.matrix_world.translation.copy()
-            for direction in directions:
-                hit,loc,norm,face,obj,matrix=s.ray_cast(dg,origin,direction,distance=.22)
-                if hit and not obj.hide_render:
-                    near.append({'shot':shot['title'],'frame':f,'object':obj.name,'distance':(loc-origin).length})
-            if i in (0,5,10):poses.append({'shot':shot['title'],'frame':f,'camera':cam.name,'location':list(origin)})
-    s.frame_set(1)
-    s['Showcase']='70 seconds, 1440p, 30 fps; animated camera markers and saved day/dusk lighting.'
-    s['Showcase fidelity']='Reference-led reconstruction; tenant offices and underground circulation include inferred details.'
-    s['Showcase render status']='Camera setup prepared; complete movie requires frame rendering and encoding.'
-    for path in (Path(__file__),ROOT/'scripts'/'inspect_showcase_runtime.py'):
-        t=bpy.data.texts.get(path.name) or bpy.data.texts.new(path.name);t.clear();t.write(path.read_text())
-    bpy.ops.file.pack_all()
-    for wm in bpy.data.window_managers:
-        for w in wm.windows:
-            for area in w.screen.areas:
-                if area.type=='CONSOLE':area.type='VIEW_3D'
-                if area.type=='VIEW_3D':
-                    sp=area.spaces.active;sp.overlay.show_overlays=False;sp.show_gizmo=False
-                    sp.shading.type='MATERIAL';sp.shading.use_scene_world=True;sp.shading.use_scene_lights=True
-                    sp.region_3d.view_perspective='CAMERA';sp.region_3d.view_camera_zoom=0;sp.clip_end=5000
-    target=VIDEO/'Surat Diamond Bourse - Showcase.blend'
-    bpy.ops.wm.save_as_mainfile(filepath=str(target))
-    assert hashlib.sha256(main.read_bytes()).hexdigest()==source_hash,'Main file changed unexpectedly.'
-    settings={'width':2560,'height':1440,'fps':30,'seconds':70,'frame_start':1,'frame_end':2100,
-              'engine':'CYCLES','max_samples':512,'adaptive_threshold':.005,'adaptive_min_samples':32,
-              'denoising':'OpenImageDenoise High / Accurate','motion_blur_shutter':.35,
-              'source_sha256':source_hash,'shots':shots}
-    (VIDEO/'showcase_settings.json').write_text(json.dumps(settings,indent=2))
-    status.update(complete=True,file=str(target),bytes=target.stat().st_size,shots=shots,
-                  review_poses=poses,near_geometry=near,fixture_data_animated=fixture_count,
-                  packed_images=sum(bool(i.packed_file) for i in bpy.data.images),actions=len(bpy.data.actions))
-except Exception:
-    status['error']=traceback.format_exc();print(status['error'])
-finally:status['finished']=time.time();record()
+def build_showcase(allow_overwrite=False):
+    global status
+    if Path(bpy.data.filepath).resolve() != main.resolve():
+        raise RuntimeError('Open the model beside this script before building the showcase.')
+    target = VIDEO / 'Surat Diamond Bourse - Showcase.blend'
+    if target.exists() and not allow_overwrite:
+        raise FileExistsError('The showcase already exists; preserve it or explicitly opt into overwriting.')
+    VIDEO.mkdir(exist_ok=True)
+    STATUS.parent.mkdir(exist_ok=True)
+    source_hash = hashlib.sha256(main.read_bytes()).hexdigest()
+    status = {'started':time.time(),'complete':False,'source_sha256':source_hash}
+    try:
+        record();s=bpy.context.scene
+        # A pristine source is required; this script is not a procedural rebuild.
+        if len(bpy.data.actions) != 0:
+            raise RuntimeError('Load the polished main file before building the film.')
+        if len([o for o in s.objects if o.name.startswith('Tower ') and o.name.endswith(' Root')]) != 9:
+            raise RuntimeError('The polished source scene must contain nine tower roots.')
+        coll=bpy.data.collections.new('Showcase | Animated cameras');s.collection.children.link(coll)
+        s.frame_start=1;s.frame_end=2100;s.render.fps=30;s.render.fps_base=1
+        s.render.resolution_x=2560;s.render.resolution_y=1440;s.render.resolution_percentage=100
+        fixture_count=day_dusk(s,1891)
+        s.render.engine='CYCLES';s.cycles.samples=512;s.cycles.use_adaptive_sampling=True
+        s.cycles.adaptive_threshold=.005;s.cycles.adaptive_min_samples=32
+        s.cycles.max_bounces=12;s.cycles.diffuse_bounces=6;s.cycles.glossy_bounces=6
+        s.cycles.transmission_bounces=8;s.cycles.transparent_max_bounces=12
+        s.cycles.use_denoising=True;s.cycles.denoiser='OPENIMAGEDENOISE'
+        s.cycles.denoising_prefilter='ACCURATE';s.cycles.denoising_quality='HIGH'
+        s.cycles.seed=42;s.cycles.use_animated_seed=False
+        s.render.use_motion_blur=True;s.render.motion_blur_shutter=.35
+        s.render.use_persistent_data=True;s.render.use_sequencer=False
+        s.render.image_settings.file_format='PNG';s.render.image_settings.color_mode='RGB'
+        s.render.image_settings.color_depth='16';s.render.image_settings.compression=20
+        s.render.filepath='//frames/frame_';s.render.use_simplify=False
+        s.timeline_markers.clear();shots=[];frame=1
+        for title,source,duration,a,b,ta,tb in SHOTS:
+            src=bpy.data.objects[source];data=src.data.copy();data.name='Showcase | '+title
+            data.dof.use_dof=False;data.passepartout_alpha=1
+            cam=bpy.data.objects.new('Showcase | '+title,data);coll.objects.link(cam)
+            cam.rotation_mode='QUATERNION';cam['source_camera']=source
+            end=frame+duration*30-1
+            # Holds outside this shot keep motion blur at cuts self-contained.
+            last_q=None
+            for f in range(max(0,frame-1),min(2101,end+1)+1):
+                t=max(0,min(1,(f-frame)/(end-frame)));u=t*t*(3-2*t)
+                if 'Aerial arc' in title:
+                    center=Vector((0,4,0));pa=Vector(a)-center;pb=Vector(b)-center
+                    theta_a=math.atan2(pa.y,pa.x);theta_b=math.atan2(pb.y,pb.x)
+                    theta=theta_a+(theta_b-theta_a)*u
+                    radius=math.hypot(pa.x,pa.y)+(math.hypot(pb.x,pb.y)-math.hypot(pa.x,pa.y))*u
+                    cam.location=(center.x+radius*math.cos(theta),center.y+radius*math.sin(theta),a[2]+(b[2]-a[2])*u)
+                elif 'Club dusk' in title:
+                    center=Vector((150,55,0));radius=math.hypot(a[0]-150,a[1]-55)
+                    angle=math.atan2(a[1]-55,a[0]-150)+math.radians(8)*u
+                    cam.location=(150+radius*math.cos(angle),55+radius*math.sin(angle),9)
+                else:cam.location=Vector(a).lerp(Vector(b),u)
+                target=Vector(ta).lerp(Vector(tb),u)
+                q=(target-cam.location).to_track_quat('-Z','Y')
+                if last_q and q.dot(last_q)<0:q.negate()
+                cam.rotation_quaternion=q;last_q=q.copy()
+                cam.keyframe_insert('location',frame=f);cam.keyframe_insert('rotation_quaternion',frame=f)
+            interpolation(cam,'LINEAR')
+            marker=s.timeline_markers.new(title,frame=frame);marker.camera=cam
+            exposure=PM.exposure_for_camera(source,dusk=title.startswith('14 '))
+            for f in (frame,end):
+                s.view_settings.exposure=exposure;s.view_settings.keyframe_insert('exposure',frame=f)
+            shots.append({'title':title,'camera':cam.name,'source':source,'start':frame,'end':end,
+                          'seconds':duration,'lens':data.lens,'exposure':exposure})
+            frame=end+1
+        interpolation(s,'CONSTANT')
+        assert frame==2101
+        s.camera=bpy.data.objects[shots[0]['camera']];s.frame_set(1)
+        # Review centerline clearance at 11 samples for every shot.
+        near=[];poses=[]
+        directions=[Vector(v) for v in ((1,0,0),(-1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1))]
+        for shot in shots:
+            cam=bpy.data.objects[shot['camera']]
+            for i in range(11):
+                f=round(shot['start']+(shot['end']-shot['start'])*i/10);s.frame_set(f)
+                assert s.camera==cam,(f,s.camera.name,cam.name)
+                dg=bpy.context.evaluated_depsgraph_get();origin=cam.matrix_world.translation.copy()
+                for direction in directions:
+                    hit,loc,norm,face,obj,matrix=s.ray_cast(dg,origin,direction,distance=.22)
+                    if hit and not obj.hide_render:
+                        near.append({'shot':shot['title'],'frame':f,'object':obj.name,'distance':(loc-origin).length})
+                if i in (0,5,10):poses.append({'shot':shot['title'],'frame':f,'camera':cam.name,'location':list(origin)})
+        s.frame_set(1)
+        s['Showcase']='70 seconds, 1440p, 30 fps; animated camera markers and saved day/dusk lighting.'
+        s['Showcase fidelity']='Reference-led reconstruction; tenant offices and underground circulation include inferred details.'
+        s['Showcase render status']='Camera setup prepared; complete movie requires frame rendering and encoding.'
+        # The runtime inspector is an optional development helper, absent from releases.
+        for path in (Path(__file__),):
+            t=bpy.data.texts.get(path.name) or bpy.data.texts.new(path.name);t.clear();t.write(path.read_text())
+        bpy.ops.file.pack_all()
+        for wm in bpy.data.window_managers:
+            for w in wm.windows:
+                for area in w.screen.areas:
+                    if area.type=='CONSOLE':area.type='VIEW_3D'
+                    if area.type=='VIEW_3D':
+                        sp=area.spaces.active;sp.overlay.show_overlays=False;sp.show_gizmo=False
+                        sp.shading.type='MATERIAL';sp.shading.use_scene_world=True;sp.shading.use_scene_lights=True
+                        sp.region_3d.view_perspective='CAMERA';sp.region_3d.view_camera_zoom=0;sp.clip_end=5000
+        target=VIDEO/'Surat Diamond Bourse - Showcase.blend'
+        bpy.ops.wm.save_as_mainfile(filepath=str(target))
+        assert hashlib.sha256(main.read_bytes()).hexdigest()==source_hash,'Main file changed unexpectedly.'
+        settings={'width':2560,'height':1440,'fps':30,'seconds':70,'frame_start':1,'frame_end':2100,
+                  'engine':'CYCLES','max_samples':512,'adaptive_threshold':.005,'adaptive_min_samples':32,
+                  'denoising':'OpenImageDenoise High / Accurate','motion_blur_shutter':.35,
+                  'source_sha256':source_hash,'shots':shots}
+        (VIDEO/'showcase_settings.json').write_text(json.dumps(settings,indent=2))
+        status.update(complete=True,file=str(target),bytes=target.stat().st_size,shots=shots,
+                      review_poses=poses,near_geometry=near,fixture_data_animated=fixture_count,
+                      packed_images=sum(bool(i.packed_file) for i in bpy.data.images),actions=len(bpy.data.actions))
+    except Exception:
+        status['error']=traceback.format_exc();print(status['error']);raise
+    finally:status['finished']=time.time();record()
+
+if __name__ == '__main__':
+    build_showcase()

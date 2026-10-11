@@ -10,13 +10,13 @@ The project's original modelling contribution is dedicated under **CC0 1.0 Unive
 
 ## Download and open
 
-**[Download the complete model (v1.0.0)](https://github.com/gitfalconhub/surat-diamond-bourse-gujarat-india/releases/download/v1.0.0/surat-diamond-bourse-model-v1.0.0.zip)** · [All downloads and checksums](https://github.com/gitfalconhub/surat-diamond-bourse-gujarat-india/releases/tag/v1.0.0)
+**[Download the complete model (v1.0.1)](https://github.com/gitfalconhub/surat-diamond-bourse-gujarat-india/releases/download/v1.0.1/surat-diamond-bourse-model-v1.0.1.zip)** · [All downloads and checksums](https://github.com/gitfalconhub/surat-diamond-bourse-gujarat-india/releases/tag/v1.0.1)
 
-Download `surat-diamond-bourse-model-v1.0.0.zip` from the link above. Extract the ZIP and open **`Surat Diamond Bourse.blend`** in Blender **5.2 or newer**. Blender 5.2.1 was used to save and verify the source scene. Compatibility with older Blender versions has not been checked.
+Download `surat-diamond-bourse-model-v1.0.1.zip` from the link above. Extract the ZIP and open **`Surat Diamond Bourse.blend`** in Blender **5.2 or newer**. Blender 5.2.1 was used to save and verify the source scene. Compatibility with older Blender versions has not been checked.
 
 The model ZIP includes the six packed texture maps and editable texture copies. No paid assets or third-party add-ons are required. Start in Solid or Material Preview mode to explore the scene; rendering is more demanding. The original Mac GPU preferences are not a requirement: select a rendering device appropriate to your machine.
 
-An optional **`surat-diamond-bourse-showcase-v1.0.0.zip`** adds the separate animated camera scene. This archived camera sequence is 70 seconds, 30 fps, 2,100 frames, with 14 shots and day/dusk lighting. It is a Blender scene, not a finished movie. Its saved presentation resolution is 2560 × 1440; adjust output settings for your own use. It is independent of the ongoing production render.
+An optional **`surat-diamond-bourse-showcase-v1.0.1.zip`** adds the separate animated camera scene. This archived camera sequence is 70 seconds, 30 fps, 2,100 frames, with 14 shots and day/dusk lighting. It is a Blender scene, not a finished movie. Its saved presentation resolution is 2560 × 1440; adjust output settings for your own use. It is independent of the ongoing production render.
 
 ## What is modelled
 
@@ -43,7 +43,7 @@ The model and included textures are in the downloadable model package. Download 
 ## Licensing
 
 - **Original model data, original documentation, and project preview renders:** CC0 1.0 Universal, to the extent the project contributors hold rights. See [LICENSE](LICENSE) and [RIGHTS.md](RIGHTS.md).
-- **Python code, including Python text blocks embedded in the `.blend` files:** GNU GPL 3.0 or later, provided separately from the artwork licence. See [LICENSE-SCRIPTS](LICENSE-SCRIPTS).
+- **Python code supplied separately in `scripts/`:** GNU GPL 3.0 or later, provided separately from the artwork licence. See [LICENSE-SCRIPTS](LICENSE-SCRIPTS).
 - **Grass/leaf-litter texture files:** CC0 from their respective asset creators. See [ASSET_LICENSES.md](ASSET_LICENSES.md).
 
 The CC0 dedication does not waive or license third-party rights in the building's architectural design, names, or trademarks. No affiliation or endorsement by Surat Diamond Bourse or Morphogenesis is claimed. The files are supplied as-is, without warranties.
@@ -59,3 +59,9 @@ The CC0 dedication does not waive or license third-party rights in the building'
 | [![Central atrium](previews/atrium.png)](previews/atrium.png)<br>Central atrium | [![Planted corridor](previews/planted_corridor.png)](previews/planted_corridor.png)<br>Planted corridor | [![Representative office](previews/office.png)](previews/office.png)<br>Representative office |
 | [![Public staircase](previews/public_stair.png)](previews/public_stair.png)<br>Public staircase | [![Lift lobby](previews/lift_lobby.png)](previews/lift_lobby.png)<br>Lift lobby | [![Basement parking](previews/parking.png)](previews/parking.png)<br>Basement parking |
 | [![Parking entrance ramp](previews/parking_ramp.png)](previews/parking_ramp.png)<br>Parking entrance ramp | [![Basement lift core](previews/parking_core.png)](previews/parking_core.png)<br>Basement lift core | [![Basement staircase](previews/basement_stair.png)](previews/basement_stair.png)<br>Basement staircase |
+
+## Release privacy
+
+The release Blender files contain public documentation only. Reviewed Python source is supplied separately in `scripts/`. Production notes, executable text blocks, saved console commands, and personal image metadata are excluded. Rebuilding from the historical scripts remains a separate operation; use a disposable scene and copy. See `RELEASE_CHECKLIST.md` before publishing changes.
+
+The source runners now require explicit execution, reject unsafe output paths, and refuse unexpected overwrites. The model builder requires a fresh scene by default. Preserve a separate copy before explicitly opting into scene reset or overwriting through `job.json`.
